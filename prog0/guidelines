@@ -1,0 +1,22 @@
+Program 0
+Test Program
+Performs MERGE SORT on given input and prints sorted array.
+
+INPUT:
+Number of elements to be sorted, followed by the elements themselves.
+
+OUTOUT:
+The sorted list, and "Number of Inversions: _" indicating the number of inversion required to generate correct output.
+
+EXAMPLE:
+    INPUT: 
+        5
+        21 33 7 11 5
+    OUTPUT:
+        5
+        7
+        11
+        21
+        33
+        No of Inversions: 8
+    
