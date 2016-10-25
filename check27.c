@@ -76,7 +76,7 @@ int main(int argc, char * argv[]){
         printf("%s", filename);
     }
 
-    //find param to print differece between files
+    //find param to print difference between files
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-pd") || !strcmp(argv[i],"--print-difference")){
             print_diff_bool = 1;
@@ -139,7 +139,7 @@ int main(int argc, char * argv[]){
         //puts(ip_dir);
     }
 
-
+    //test against test cases, and print difference if -pd is passed
     test_prog(no_ip, op_dir, sl_dir, print_diff_bool);
     //system("cat diff.txt");
     system("rm prog.out");
@@ -153,8 +153,7 @@ int compile(char * filename){
     sprintf(sys_cmd, "gcc -O0 -std=c99 %s -o prog.out", filename);
     puts("Compiling...");
     system(sys_cmd);
-    system("rm compile_err");
-    //puts(sys_cmd);
+
     //check if comiled successfully]
     if(!file_exists("prog.out")){
         puts(ANSI_COLOR_RED "Compilation Failed.\n"ANSI_COLOR_RESET);
@@ -166,6 +165,8 @@ int compile(char * filename){
 
 }
 
+//function to check if a file exists
+//doesnt check if its accessible
 int file_exists(char* path){
     if(access(path, F_OK)!=-1)
         return 1;
@@ -176,6 +177,7 @@ int file_exists(char* path){
 void test_prog(int no_ip, char * op_dir, char * sl_dir, int print_diff_bool){
 
     int path_size = strlen(op_dir);
+    //position of character number that determines which test case it is
     int key_pos = path_size-1;
     for(int i=0; i<no_ip; i++){
         op_dir[key_pos] = sl_dir[key_pos] = i+48;
@@ -198,34 +200,42 @@ int print_diff(char * opdir, char * sldir){
     if(sl==NULL){puts("ERROR: Solution file doesn't exist"); return 2;}
 
     printf("%-40s %-40s\r","YOUR OUTPUT", "EXPECTED OUTPUT");
-    while(!feof(op) && !feof(sl)){
-        //print likes side-by-side
-
+    while(!feof(op) || !feof(sl)){
+        //gets the next non-empty line into buffer
         while(!feof(op)){
           fgets(buffer1, 100, op);
+          //remove trailing \n from gets
           buffer1[strcspn(buffer1, "\n")] = 0;
+          //remove trailing spaces in line
+          while(buffer1[strlen(buffer1)-1] == ' ' || buffer1[strlen(buffer1)-1] == '\t')
+            buffer1[strlen(buffer1)-1]='\0';
           if(buffer1[0]!='\0') break;
         }
         while(!feof(sl)){
           fgets(buffer2,100,sl);
           buffer2[strcspn(buffer2, "\n")] = 0;
+          while(buffer2[strlen(buffer2)-1] == ' ' || buffer2[strlen(buffer2)-1] == '\t')
+            buffer2[strlen(buffer2)-1]='\0';
           if(buffer2[0]!='\0') break;
         }
 
 
-        if(feof(op) || feof(sl)) break;
+        //if(feof(op) || feof(sl)) break;
 
-
+        //check if error encountered
         if(err_flag==0 && strcmp(buffer1,buffer2)) err_flag=1;
-
+        //print in green if no err so far
         if(err_flag==0)
         printf(ANSI_COLOR_GREEN"%-40s %-40s\r" ANSI_COLOR_RESET,buffer1, buffer2);
+        //print first error line encounted in red
         else if(err_flag==1){
             printf(ANSI_COLOR_RED"%-40s %-40s\r" ANSI_COLOR_RESET,buffer1, buffer2);
             err_flag=2;
         }
+        //print in yellow if one error line has already been printed in red
         else if(err_flag==2)
             printf(ANSI_COLOR_YELLOW"%-40s %-40s\r",buffer1, buffer2);
+        buffer1[0]='\0'; buffer2[0]='\0';
     }
     //printf("");
     return 0;
@@ -242,12 +252,18 @@ int file_cmp(char * opdir, char * sldir){
       //get line and remove trailing \n from fgets
       while(!feof(op)){
         fgets(buffer1, 100, op);
+        //remove trailing \n from gets
         buffer1[strcspn(buffer1, "\n")] = 0;
+        //remove trailing spaces in line
+        while(buffer1[strlen(buffer1)-1] == ' ' || buffer1[strlen(buffer1)-1] == '\t')
+          buffer1[strlen(buffer1)-1]='\0';
         if(buffer1[0]!='\0') break;
       }
       while(!feof(sl)){
         fgets(buffer2,100,sl);
         buffer2[strcspn(buffer2, "\n")] = 0;
+        while(buffer2[strlen(buffer2)-1] == ' ' || buffer2[strlen(buffer2)-1] == '\t')
+          buffer2[strlen(buffer2)-1]='\0';
         if(buffer2[0]!='\0') break;
       }
 
@@ -266,7 +282,6 @@ int file_cmp(char * opdir, char * sldir){
     }
 
     //if both reach EOF at the same time
-    printf("OP: %i, SL: %i\n %s %s\n", feof(op), feof(sl), buffer1, buffer2);
     if(feof(op) && feof(sl)) return 0;
     //if only one of the files has reached EOF
     return 1;
