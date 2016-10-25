@@ -234,7 +234,7 @@ int print_diff(char * opdir, char * sldir){
         }
         //print in yellow if one error line has already been printed in red
         else if(err_flag==2)
-            printf(ANSI_COLOR_YELLOW"%-40s %-40s\r",buffer1, buffer2);
+            printf(ANSI_COLOR_YELLOW"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
         buffer1[0]='\0'; buffer2[0]='\0';
     }
     //printf("");
