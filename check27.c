@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define VERSION "check27 version 1.0 (linux)"
 
@@ -60,10 +61,19 @@ int main(int argc, char * argv[]){
     //check for arg requesting program guidelines
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-g") || !strcmp(argv[i],"--guidlines")){
-            //TODO: check if program arg is a number
             char guidelines_path[500];
-            sprintf(guidelines_path,"cat %s/prog%i/guidelines", PDIR, atoi(argv[i+1]));
-            system(guidelines_path);
+            char sys_cmd[500];
+            if(i+1>=argc){
+                     puts("ERROR: Program ID not specified for guidlines");
+                     return 2;
+            }
+            sprintf(guidelines_path,"%s/prog%s/guidelines", PDIR, argv[i+1]);
+            if(!file_exists(guidelines_path)){
+                printf("ERROR: No guidline entry for prog%s\n", argv[i+1]);
+                return 2;
+            }
+            sprintf(sys_cmd, "cat %s", guidelines_path);
+            system(sys_cmd);
             return 0;
         }
     }
