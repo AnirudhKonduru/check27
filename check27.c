@@ -27,7 +27,7 @@ int print_diff(char * opdir, char * sldir);
 int main(int argc, char * argv[]){
     //Check for no files or options
     int progn = -1;
-    char filename[500];
+    char filename[500]="";
     int print_diff_bool=0;
     if(argc==1){
         puts("ERROR: No input files entered. Try \"check27 -H\" or \"check27 --help\"");
@@ -217,6 +217,7 @@ int print_diff(char * opdir, char * sldir){
           //remove trailing \n from gets
           buffer1[strcspn(buffer1, "\n")] = 0;
           //remove trailing spaces in line
+          if(strlen(buffer1)==0) continue;
           while(buffer1[strlen(buffer1)-1] == ' ' || buffer1[strlen(buffer1)-1] == '\t')
             buffer1[strlen(buffer1)-1]='\0';
           if(buffer1[0]!='\0') break;
@@ -224,6 +225,7 @@ int print_diff(char * opdir, char * sldir){
         while(!feof(sl)){
           fgets(buffer2,100,sl);
           buffer2[strcspn(buffer2, "\n")] = 0;
+          if(strlen(buffer2)==0) continue;
           while(buffer2[strlen(buffer2)-1] == ' ' || buffer2[strlen(buffer2)-1] == '\t')
             buffer2[strlen(buffer2)-1]='\0';
           if(buffer2[0]!='\0') break;
@@ -247,16 +249,26 @@ int print_diff(char * opdir, char * sldir){
             printf(ANSI_COLOR_YELLOW"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
         buffer1[0]='\0'; buffer2[0]='\0';
     }
-    //printf("");
+    fclose(op);
+    fclose(sl);
     return 0;
 }
 
 int file_cmp(char * opdir, char * sldir){
     FILE * op = fopen(opdir,"r");
+    if(op==NULL){
+        puts("ERROR: O/P file doesn't exist");
+        return 2;
+    }
+
     FILE * sl = fopen(sldir,"r");
-    char buffer1[100]="\0", buffer2[100]="\0";
-    if(op==NULL){puts("ERROR: O/P file doesn't exist"); return 2;}
-    if(sl==NULL){puts("ERROR: Solution file doesn't exist"); return 2;}
+    if(sl==NULL){
+        puts("ERROR: Solution file doesn't exist");
+        fclose(op);
+        return 2;
+    }
+
+    char buffer1[100]="", buffer2[100]="";
 
     while(!feof(op) && !feof(sl)){
       //get line and remove trailing \n from fgets
@@ -265,6 +277,7 @@ int file_cmp(char * opdir, char * sldir){
         //remove trailing \n from gets
         buffer1[strcspn(buffer1, "\n")] = 0;
         //remove trailing spaces in line
+        if(strlen(buffer1)==0) continue;
         while(buffer1[strlen(buffer1)-1] == ' ' || buffer1[strlen(buffer1)-1] == '\t')
           buffer1[strlen(buffer1)-1]='\0';
         if(buffer1[0]!='\0') break;
@@ -272,13 +285,18 @@ int file_cmp(char * opdir, char * sldir){
       while(!feof(sl)){
         fgets(buffer2,100,sl);
         buffer2[strcspn(buffer2, "\n")] = 0;
+        if(strlen(buffer2)==0) continue;
         while(buffer2[strlen(buffer2)-1] == ' ' || buffer2[strlen(buffer2)-1] == '\t')
           buffer2[strlen(buffer2)-1]='\0';
         if(buffer2[0]!='\0') break;
       }
 
       if(feof(op) || feof(sl)) break;
-      if(strcmp(buffer1,buffer2)) return 1;
+      if(strcmp(buffer1,buffer2)){
+          fclose(op);
+          fclose(sl);
+          return 1;
+      }
     }
 
     //remove newlines at end of file
@@ -292,7 +310,14 @@ int file_cmp(char * opdir, char * sldir){
     }
 
     //if both reach EOF at the same time
-    if(feof(op) && feof(sl)) return 0;
+    if(feof(op) && feof(sl)){
+        fclose(op);
+        fclose(sl);
+        return 0;
+    }
+
+    fclose(op);
+    fclose(sl);
     //if only one of the files has reached EOF
     return 1;
 
