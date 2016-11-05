@@ -18,16 +18,17 @@
 //TODO: change to approp location later, probably user/share
 #define PDIR "/home/ani/Documents/check27"
 
-void test_prog(int no_ip, char * op_dir, char * sl_dir, int print_diff);
+void test_prog(int no_ip, char * op_filepath, char * sl_filepath, int print_diff);
 int compile(char * filename);
 int file_exists(char* path);
-int file_cmp(char * op_dir, char * sl_dir);
-int print_diff(char * opdir, char * sldir);
+int file_cmp(char * op_filepath, char * sl_filepath);
+int print_diff(char * op_filepath, char * sl_filepath);
 
 int main(int argc, char * argv[]){
     //Check for no files or options
     int progn = -1;
-    char filename[500]="";
+    char filename[500];
+    char sys_cmd[500];
     int print_diff_bool=0;
     if(argc==1){
         puts("ERROR: No input files entered. Try \"check27 -H\" or \"check27 --help\"");
@@ -98,11 +99,10 @@ int main(int argc, char * argv[]){
     //get program number from last 3rd letter of filename
     if(progn==-1)
         progn = filename[strlen(filename)-3]-48;
-    char progn_dir[500] = "";
-    char ip_dir[500] = "";
-    char op_dir[500];
-    char sl_dir[500];
-
+    char progn_dir[500];
+    char ip_filepath[500];
+    char op_filepath[500];
+    char sl_filepath[500];
 
     strcpy(progn_dir, PDIR);
     strcat(progn_dir,"/prog");
@@ -112,46 +112,51 @@ int main(int argc, char * argv[]){
     progn_dir[path_size+1]='\0';
     //puts(progn_dir);
 
+    //make an output directory into which op files go.
+    sprintf(sys_cmd, "mkdir %s/op", progn_dir);
+    system(sys_cmd);
 
-    //Generate op_dir and sl_dir from ip_dir
-    strcpy(ip_dir, progn_dir);
-    strcpy(op_dir,ip_dir);
-    strcpy(sl_dir, ip_dir);
+    //Generate op_filepath and sl_filepath from ip_filepath
+    strcpy(ip_filepath, progn_dir);
+    strcpy(op_filepath,ip_filepath);
+    strcpy(sl_filepath, ip_filepath);
 
-    strcat(ip_dir, "/ip/ip");
-    strcat(op_dir, "/op/op");
-    strcat(sl_dir, "/sl/sl");
+    strcat(ip_filepath, "/ip/ip");
+    strcat(op_filepath, "/op/op");
+    strcat(sl_filepath, "/sl/sl");
 
 
-    path_size = strlen(ip_dir);
+    path_size = strlen(ip_filepath);
     int key_pos = path_size;
-    ip_dir[key_pos] = progn+48;
-    ip_dir[path_size+1]='\0';
+    ip_filepath[key_pos] = progn+48;
+    ip_filepath[path_size+1]='\0';
 
-    op_dir[path_size] = progn+48;
-    op_dir[path_size+1]='\0';
+    op_filepath[path_size] = progn+48;
+    op_filepath[path_size+1]='\0';
 
-    sl_dir[path_size] = progn+48;
-    sl_dir[path_size+1]='\0';
+    sl_filepath[path_size] = progn+48;
+    sl_filepath[path_size+1]='\0';
 
     path_size++;
 
-    char sys_cmd[500];
-
     int no_ip=0;
-    while(file_exists(ip_dir)){
+    while(file_exists(ip_filepath)){
         no_ip++;
-        sprintf(sys_cmd,"./prog.out < %s > %s", ip_dir, op_dir);
+        sprintf(sys_cmd,"./prog.out < %s > %s", ip_filepath, op_filepath);
         system(sys_cmd);
 
-        ip_dir[key_pos]++;
-        op_dir[key_pos]++;
-        //puts(ip_dir);
+        ip_filepath[key_pos]++;
+        op_filepath[key_pos]++;
+        //puts(ip_filepath);
     }
 
     //test against test cases, and print difference if -pd is passed
-    test_prog(no_ip, op_dir, sl_dir, print_diff_bool);
+    test_prog(no_ip, op_filepath, sl_filepath, print_diff_bool);
     //system("cat diff.txt");
+
+    //delete the output directory
+    sprintf(sys_cmd, "rm -rf %s/op", progn_dir);
+    system(sys_cmd);
     system("rm prog.out");
     return 0;
 
@@ -166,11 +171,11 @@ int compile(char * filename){
 
     //check if comiled successfully]
     if(!file_exists("prog.out")){
-        puts(ANSI_COLOR_RED "Compilation Failed.\n"ANSI_COLOR_RESET);
+        printf(ANSI_COLOR_RED"Compilation Failed.\n"ANSI_COLOR_RESET);
         exit(2);
     }
     //fclose(exec);
-    puts(ANSI_COLOR_GREEN"Compilation Successful\n" ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_GREEN"Compilation Successful\n"ANSI_COLOR_RESET);
     return 0;
 
 }
@@ -184,27 +189,27 @@ int file_exists(char* path){
 }
 
 
-void test_prog(int no_ip, char * op_dir, char * sl_dir, int print_diff_bool){
+void test_prog(int no_ip, char * op_filepath, char * sl_filepath, int print_diff_bool){
 
-    int path_size = strlen(op_dir);
+    int path_size = strlen(op_filepath);
     //position of character number that determines which test case it is
     int key_pos = path_size-1;
     for(int i=0; i<no_ip; i++){
-        op_dir[key_pos] = sl_dir[key_pos] = i+48;
+        op_filepath[key_pos] = sl_filepath[key_pos] = i+48;
         //char test_no_str[50];
-        if(!file_cmp(op_dir, sl_dir))
+        if(!file_cmp(op_filepath, sl_filepath))
             printf(ANSI_COLOR_GREEN"Test:%i\n"ANSI_COLOR_RESET,i);
         else
             printf(ANSI_COLOR_RED"Test:%i\n"ANSI_COLOR_RESET,i);
         if(print_diff_bool)
-            print_diff(op_dir, sl_dir);
+            print_diff(op_filepath, sl_filepath);
     }
 }
 
-int print_diff(char * opdir, char * sldir){
+int print_diff(char * op_filepath, char * sl_filepath){
     int err_flag=0;
-    FILE * op = fopen(opdir,"r");
-    FILE * sl = fopen(sldir,"r");
+    FILE * op = fopen(op_filepath,"r");
+    FILE * sl = fopen(sl_filepath,"r");
     char buffer1[100]="\0", buffer2[100]="\0";
     if(op==NULL){puts("ERROR: O/P file doesn't exist"); return 2;}
     if(sl==NULL){puts("ERROR: Solution file doesn't exist"); return 2;}
@@ -238,10 +243,10 @@ int print_diff(char * opdir, char * sldir){
         if(err_flag==0 && strcmp(buffer1,buffer2)) err_flag=1;
         //print in green if no err so far
         if(err_flag==0)
-        printf(ANSI_COLOR_GREEN"%-40s %-40s\r" ANSI_COLOR_RESET,buffer1, buffer2);
+        printf(ANSI_COLOR_GREEN"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
         //print first error line encounted in red
         else if(err_flag==1){
-            printf(ANSI_COLOR_RED"%-40s %-40s\r" ANSI_COLOR_RESET,buffer1, buffer2);
+            printf(ANSI_COLOR_RED"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
             err_flag=2;
         }
         //print in yellow if one error line has already been printed in red
@@ -254,14 +259,14 @@ int print_diff(char * opdir, char * sldir){
     return 0;
 }
 
-int file_cmp(char * opdir, char * sldir){
-    FILE * op = fopen(opdir,"r");
+int file_cmp(char * op_filepath, char * sl_filepath){
+    FILE * op = fopen(op_filepath,"r");
     if(op==NULL){
         puts("ERROR: O/P file doesn't exist");
         return 2;
     }
 
-    FILE * sl = fopen(sldir,"r");
+    FILE * sl = fopen(sl_filepath,"r");
     if(sl==NULL){
         puts("ERROR: Solution file doesn't exist");
         fclose(op);
