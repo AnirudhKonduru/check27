@@ -16,7 +16,7 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 //TODO: change to approp location later, probably user/share
-#define PDIR "/home/ani/Documents/check27"
+#define PDIR "/usr/share/check27"
 
 void test_prog(int no_ip, char * op_filepath, char * sl_filepath, int print_diff);
 int compile(char * filename);
@@ -99,54 +99,28 @@ int main(int argc, char * argv[]){
     //get program number from last 3rd letter of filename
     if(progn==-1)
         progn = filename[strlen(filename)-3]-48;
-    char progn_dir[500];
+    //char progn_dir[500];
     char ip_filepath[500];
     char op_filepath[500];
     char sl_filepath[500];
 
-    strcpy(progn_dir, PDIR);
-    strcat(progn_dir,"/prog");
-    //puts(progn_dir);
-    int path_size = strlen(progn_dir);
-    progn_dir[path_size]=progn+48;
-    progn_dir[path_size+1]='\0';
-    //puts(progn_dir);
+    sprintf(ip_filepath, "%s/prog%i/ip/ip0", PDIR,progn);
+    sprintf(sl_filepath, "%s/prog%i/sl/sl0", PDIR,progn);
 
-    //make an output directory into which op files go.
-    sprintf(sys_cmd, "mkdir %s/op", progn_dir);
-    system(sys_cmd);
-
-    //Generate op_filepath and sl_filepath from ip_filepath
-    strcpy(ip_filepath, progn_dir);
-    strcpy(op_filepath,ip_filepath);
-    strcpy(sl_filepath, ip_filepath);
-
-    strcat(ip_filepath, "/ip/ip");
-    strcat(op_filepath, "/op/op");
-    strcat(sl_filepath, "/sl/sl");
-
-
-    path_size = strlen(ip_filepath);
-    int key_pos = path_size;
-    ip_filepath[key_pos] = progn+48;
-    ip_filepath[path_size+1]='\0';
-
-    op_filepath[path_size] = progn+48;
-    op_filepath[path_size+1]='\0';
-
-    sl_filepath[path_size] = progn+48;
-    sl_filepath[path_size+1]='\0';
-
-    path_size++;
-
+    int path_size = strlen(ip_filepath);
+    int key = path_size-1; //key for ip and sl
+    sprintf(op_filepath, "./op/op0");
+    path_size = strlen(op_filepath);
+    int key_op = path_size-1;
+    system("mkdir ./op");
     int no_ip=0;
     while(file_exists(ip_filepath)){
         no_ip++;
         sprintf(sys_cmd,"./prog.out < %s > %s", ip_filepath, op_filepath);
         system(sys_cmd);
 
-        ip_filepath[key_pos]++;
-        op_filepath[key_pos]++;
+        ip_filepath[key]++;
+        op_filepath[key_op]++;
         //puts(ip_filepath);
     }
 
@@ -155,7 +129,7 @@ int main(int argc, char * argv[]){
     //system("cat diff.txt");
 
     //delete the output directory
-    sprintf(sys_cmd, "rm -rf %s/op", progn_dir);
+    sprintf(sys_cmd, "rm -rf ./op");
     system(sys_cmd);
     system("rm prog.out");
     return 0;
@@ -191,11 +165,13 @@ int file_exists(char* path){
 
 void test_prog(int no_ip, char * op_filepath, char * sl_filepath, int print_diff_bool){
 
-    int path_size = strlen(op_filepath);
+    int path_size = strlen(sl_filepath);
     //position of character number that determines which test case it is
-    int key_pos = path_size-1;
+    int key = path_size-1;
+    path_size = strlen(op_filepath);
+    int key_op = path_size-1;
     for(int i=0; i<no_ip; i++){
-        op_filepath[key_pos] = sl_filepath[key_pos] = i+48;
+        op_filepath[key_op] = sl_filepath[key] = i+48;
         //char test_no_str[50];
         if(!file_cmp(op_filepath, sl_filepath))
             printf(ANSI_COLOR_GREEN"Test:%i\n"ANSI_COLOR_RESET,i);
