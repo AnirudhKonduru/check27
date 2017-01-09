@@ -189,8 +189,7 @@ int print_diff(char * op_filepath, char * sl_filepath){
     char buffer1[100]="\0", buffer2[100]="\0";
     if(op==NULL){puts("ERROR: O/P file doesn't exist"); return 2;}
     if(sl==NULL){puts("ERROR: Solution file doesn't exist"); return 2;}
-
-    printf("%-40s %-40s\r","YOUR OUTPUT", "EXPECTED OUTPUT");
+    printf("%-40s %-40s\n","YOUR OUTPUT", "EXPECTED OUTPUT");
     while(!feof(op) || !feof(sl)){
         //gets the next non-empty line into buffer
         while(!feof(op)){
@@ -219,15 +218,15 @@ int print_diff(char * op_filepath, char * sl_filepath){
         if(err_flag==0 && strcmp(buffer1,buffer2)) err_flag=1;
         //print in green if no err so far
         if(err_flag==0)
-        printf(ANSI_COLOR_GREEN"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
+        printf(ANSI_COLOR_GREEN"%-40s %-40s\n"ANSI_COLOR_RESET,buffer1, buffer2);
         //print first error line encounted in red
         else if(err_flag==1){
-            printf(ANSI_COLOR_RED"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
+            printf(ANSI_COLOR_RED"%-40s %-40s\n"ANSI_COLOR_RESET,buffer1, buffer2);
             err_flag=2;
         }
         //print in yellow if one error line has already been printed in red
         else if(err_flag==2)
-            printf(ANSI_COLOR_YELLOW"%-40s %-40s\r"ANSI_COLOR_RESET,buffer1, buffer2);
+            printf(ANSI_COLOR_YELLOW"%-40s %-40s\n"ANSI_COLOR_RESET,buffer1, buffer2);
         buffer1[0]='\0'; buffer2[0]='\0';
     }
     fclose(op);
