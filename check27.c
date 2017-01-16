@@ -25,7 +25,7 @@ int file_cmp(char * op_filepath, char * sl_filepath);
 int print_diff(char * op_filepath, char * sl_filepath);
 
 int main(int argc, char * argv[]){
-    //Check for no files or options
+    // Check for no files or options
     int progn = -1;
     char filename[500];
     char sys_cmd[500];
@@ -35,7 +35,7 @@ int main(int argc, char * argv[]){
         return 1;
     }
 
-    //check for version
+    // check for version
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-v") || !strcmp(argv[i],"--version")){
             puts(VERSION);
@@ -43,7 +43,7 @@ int main(int argc, char * argv[]){
         }
     }
 
-    //check for help argument
+    // check for help argument
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-H") || !strcmp(argv[i],"--help")){
             puts("USAGE: check27 prog_.c\n Fill in appropriate program number\n");
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]){
         }
     }
 
-    //check for custom program number
+    // check for custom program number
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-p") || !strcmp(argv[i],"--program")){
             //TODO: check if program arg is a number
@@ -59,7 +59,7 @@ int main(int argc, char * argv[]){
             }
     }
 
-    //check for arg requesting program guidelines
+    // check for arg requesting program guidelines
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-g") || !strcmp(argv[i],"--guidlines")){
             char guidelines_path[500];
@@ -79,7 +79,7 @@ int main(int argc, char * argv[]){
         }
     }
 
-    //find filename
+    // find filename
     for(int i=1;i<argc;i++){
         printf("%s", argv[i]);
         if(strstr(argv[i], ".c")!=NULL || strstr(argv[i],".cpp")!=NULL)
@@ -87,16 +87,16 @@ int main(int argc, char * argv[]){
         printf("%s", filename);
     }
 
-    //find param to print difference between files
+    // find param to print difference between files
     for(int i=1;i<argc;i++){
         if(!strcmp(argv[i],"-pd") || !strcmp(argv[i],"--print-difference")){
             print_diff_bool = 1;
         }
     }
 
-    //Compile
+    // Compile
     compile(filename);
-    //get program number from last 3rd letter of filename
+    // get program number from last 3rd letter of filename
     if(progn==-1)
         progn = filename[strlen(filename)-3]-48;
     //char progn_dir[500];
@@ -108,7 +108,7 @@ int main(int argc, char * argv[]){
     sprintf(sl_filepath, "%s/prog%i/sl/sl0", PDIR,progn);
 
     int path_size = strlen(ip_filepath);
-    int key = path_size-1; //key for ip and sl
+    int key = path_size-1; // key for ip and sl
     sprintf(op_filepath, "./op/op0");
     path_size = strlen(op_filepath);
     int key_op = path_size-1;
@@ -124,11 +124,11 @@ int main(int argc, char * argv[]){
         //puts(ip_filepath);
     }
 
-    //test against test cases, and print difference if -pd is passed
+    // test against test cases, and print difference if -pd is passed
     test_prog(no_ip, op_filepath, sl_filepath, print_diff_bool);
     //system("cat diff.txt");
 
-    //delete the output directory
+    // delete the output directory
     sprintf(sys_cmd, "rm -rf ./op");
     system(sys_cmd);
     system("rm prog.out");
@@ -143,19 +143,19 @@ int compile(char * filename){
     puts("Compiling...");
     system(sys_cmd);
 
-    //check if comiled successfully]
+    // check if comiled successfully
     if(!file_exists("prog.out")){
         printf(ANSI_COLOR_RED"Compilation Failed.\n"ANSI_COLOR_RESET);
         exit(2);
     }
     //fclose(exec);
-    printf(ANSI_COLOR_GREEN"Compilation Successful\n"ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_GREEN"Compilation Successful.\n"ANSI_COLOR_RESET);
     return 0;
 
 }
 
-//function to check if a file exists
-//doesnt check if its accessible
+// function to check if a file exists
+// doesn't check if its accessible
 int file_exists(char* path){
     if(access(path, F_OK)!=-1)
         return 1;
@@ -166,7 +166,7 @@ int file_exists(char* path){
 void test_prog(int no_ip, char * op_filepath, char * sl_filepath, int print_diff_bool){
 
     int path_size = strlen(sl_filepath);
-    //position of character number that determines which test case it is
+    // position of character number that determines which test case it is
     int key = path_size-1;
     path_size = strlen(op_filepath);
     int key_op = path_size-1;
@@ -174,13 +174,18 @@ void test_prog(int no_ip, char * op_filepath, char * sl_filepath, int print_diff
         op_filepath[key_op] = sl_filepath[key] = i+48;
         //char test_no_str[50];
         if(!file_cmp(op_filepath, sl_filepath))
-            printf(ANSI_COLOR_GREEN"Test:%i\n"ANSI_COLOR_RESET,i);
+            printf(ANSI_COLOR_GREEN"Test: %i\n"ANSI_COLOR_RESET,i);
         else
-            printf(ANSI_COLOR_RED"Test:%i\n"ANSI_COLOR_RESET,i);
+            printf(ANSI_COLOR_RED"Test: %i\n"ANSI_COLOR_RESET,i);
         if(print_diff_bool)
             print_diff(op_filepath, sl_filepath);
     }
 }
+
+// This function prints the differences between the output
+// and solution generated by the program.
+// Matching lines are coloured in green, line of difference is in red
+// and the remaining lines are coloured yellow
 
 int print_diff(char * op_filepath, char * sl_filepath){
     int err_flag=0;
@@ -214,17 +219,17 @@ int print_diff(char * op_filepath, char * sl_filepath){
 
         //if(feof(op) || feof(sl)) break;
 
-        //check if error encountered
+        // check if error encountered
         if(err_flag==0 && strcmp(buffer1,buffer2)) err_flag=1;
         //print in green if no err so far
         if(err_flag==0)
         printf(ANSI_COLOR_GREEN"%-40s %-40s\n"ANSI_COLOR_RESET,buffer1, buffer2);
-        //print first error line encounted in red
+        // print first error line encounted in red
         else if(err_flag==1){
             printf(ANSI_COLOR_RED"%-40s %-40s\n"ANSI_COLOR_RESET,buffer1, buffer2);
             err_flag=2;
         }
-        //print in yellow if one error line has already been printed in red
+        // print in yellow if one error line has already been printed in red
         else if(err_flag==2)
             printf(ANSI_COLOR_YELLOW"%-40s %-40s\n"ANSI_COLOR_RESET,buffer1, buffer2);
         buffer1[0]='\0'; buffer2[0]='\0';
@@ -234,6 +239,8 @@ int print_diff(char * op_filepath, char * sl_filepath){
     return 0;
 }
 
+// Function checks if the given two files are the same
+// after cleaning up by removing extra spaces, tabs etc.
 int file_cmp(char * op_filepath, char * sl_filepath){
     FILE * op = fopen(op_filepath,"r");
     if(op==NULL){
@@ -251,12 +258,12 @@ int file_cmp(char * op_filepath, char * sl_filepath){
     char buffer1[100]="", buffer2[100]="";
 
     while(!feof(op) && !feof(sl)){
-      //get line and remove trailing \n from fgets
+      // get line and remove trailing \n from fgets
       while(!feof(op)){
         fgets(buffer1, 100, op);
-        //remove trailing \n from gets
+        // remove trailing \n from gets
         buffer1[strcspn(buffer1, "\n")] = 0;
-        //remove trailing spaces in line
+        // remove trailing spaces in line
         if(strlen(buffer1)==0) continue;
         while(buffer1[strlen(buffer1)-1] == ' ' || buffer1[strlen(buffer1)-1] == '\t')
           buffer1[strlen(buffer1)-1]='\0';
@@ -279,7 +286,7 @@ int file_cmp(char * op_filepath, char * sl_filepath){
       }
     }
 
-    //remove newlines at end of file
+    // remove newlines at end of file
     while(!feof(op)){
       fgets(buffer1, 100, op);
       if(buffer1[0]!='\n') break;
@@ -289,7 +296,7 @@ int file_cmp(char * op_filepath, char * sl_filepath){
       if(buffer2[0]!='\n') break;
     }
 
-    //if both reach EOF at the same time
+    // if both reach EOF at the same time
     if(feof(op) && feof(sl)){
         fclose(op);
         fclose(sl);
@@ -298,7 +305,6 @@ int file_cmp(char * op_filepath, char * sl_filepath){
 
     fclose(op);
     fclose(sl);
-    //if only one of the files has reached EOF
+    // if only one of the files has reached EOF
     return 1;
-
 }
